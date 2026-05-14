@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+
+  # Serviço do banco de dados MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+
+    # Variáveis de ambiente do MySQL
+    environment:
+      MYSQL_ROOT_PASSWORD: 100107
+      MYSQL_DATABASE: api_devops_db
+      MYSQL_USER: rm560907
+      MYSQL_PASSWORD: Fiap@2026
+
+    # Porta do container exposta para a máquina local
+    ports:
+      - "3306:3306"
+
+    # Volume para persistência dos dados
+    volumes:
+      - database-volume:/var/lib/mysql
+
+    # Rede usada pelos containers
+    networks:
+      - api-devops-network
+
+    # Comando de inicialização do MySQL
+    command: --default-authentication-plugin=mysql_native_password
+
+    # Verifica se o banco está saudável antes de iniciar a API
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "anna", "-prm561928"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  # Serviço da aplicação Spring Boot
+  api-devops:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: api-devops
+
+    container_name: api-devops
+    restart: always
+
+    # Variáveis usadas pela aplicação Spring Boot
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: api_devops_db
+      MYSQL_USER: rm560907
+      MYSQL_PASSWORD: Fiap@2026
+
+    # Porta da aplicação
+    ports:
+      - "8080:8080"
+
+    # Aguarda o banco ficar saudável para iniciar a API
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    # Volume para logs da aplicação
+    volumes:
+      - app-logs:/app/logs
+
+    # Rede compartilhada entre os containers
+    networks:
+      - api-devops-network
+
+
+# Rede Docker personalizada
+networks:
+  api-devops-network:
+
+# Volumes persistentes
+volumes:
+  database-volume:
+  app-logs:
