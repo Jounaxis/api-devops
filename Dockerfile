@@ -26,7 +26,7 @@ COPY pom.xml .
 RUN mvn dependency:go-offline
 
 # Copia os arquivos fonte do projeto
-ADD src ./src
+COPY src ./src
 
 # Gera o arquivo .jar da aplicação
 RUN mvn clean package -DskipTests
